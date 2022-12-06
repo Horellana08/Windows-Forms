@@ -1,0 +1,49 @@
+CREATE DATABASE Reporte
+USE Reporte;
+DROP TABLE Persona;
+Create table Persona(
+Idpersona INT IDENTITY(1,1),
+Nombre VARCHAR(15),
+ApellidoPat VARCHAR(15),
+ApellidoMat VARCHAR(15),
+TipoDoc INT,
+Correo VARCHAR(30),
+ PRIMARY KEY(TipoDoc)
+)
+ DROP TABLE Documento;
+CREATE TABLE Documento(
+ IdDoc INT IDENTITY(1,1),
+ Nombre VARCHAR(20),
+Vigencia BIT,
+  PRIMARY KEY(IdDoc)
+)
+
+ALTER TABLE Persona 
+ADD FOREIGN KEY(TipoDoc) 
+REFERENCES Documento(IdDoc)
+
+INSERT INTO Documento(Nombre,Vigencia) VALUES('DUI',1);
+INSERT INTO Documento(Nombre,Vigencia) VALUES('Certificado',1);
+INSERT INTO Documento(Nombre,Vigencia) VALUES('C.I',0);
+
+INSERT INTO Persona(Nombre,ApellidoPat,ApellidoMat,TipoDoc,Correo) 
+VALUES('Limber','Guitierrez','Manzaneda',1,'lim@gmail.com');
+INSERT INTO Persona(Nombre,ApellidoPat,ApellidoMat,TipoDoc,Correo) 
+VALUES('Marcelo','Flores','Gutierez',2,'Mar@gmail.com');
+
+--Ya que hemos creado nuestras tablas  de cardinalidad de 1 a 1, a continuación vamos
+--A crear procedimiento almacenado  para hacer consulta  a la base de datos.
+
+CREATE PROCEDURE DatosPersona 
+AS
+declare @valor as int=0
+set @valor=(select COUNT(Per.Idpersona) FROM Persona AS Per)
+IF @valor>0
+    SELECT 
+	Per.Nombre,Per.ApellidoPat,Per.ApellidoMat,Doc.Nombre,Per.Correo,Doc.Vigencia 
+	FROM Persona as Per
+	inner join Documento as Doc on Per.TipoDoc=Doc.IdDoc
+	ELSE
+RETURN @valor 
+;Se ejecuta el procedimiento
+exec DatosPersona

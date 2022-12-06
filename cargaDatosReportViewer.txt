@@ -1,0 +1,82 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using Microsoft.Reporting.WinForms;
+
+namespace PoryectoReporte
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            this.Load += Form1_Load1;
+        }
+        /// <summary>
+        /// Se carga los datos en el reporte 
+        /// en el evento Load
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_Load1(object sender, EventArgs e)
+        {
+            CargarReporte();
+           
+        }
+        /// <summary>
+        /// Método para recuperar Datos a una lista
+        /// y para mostrar en el ReportViewer
+        /// </summary>
+        private void CargarReporte() {
+            List<Persona> Agregar = new List<Persona>();
+            Conexionsql AcederDatos = new Conexionsql();
+            foreach (DataRow Lista in AcederDatos.Datos().Rows){
+                Agregar.Add( new Persona{
+                    Nombre = Lista[0].ToString(),
+                    ApellidoPat = Lista[1].ToString(),
+                    ApellidMat = Lista[2].ToString(),
+                    TipoDocument = Lista[3].ToString(),
+                    Correo = Lista[4].ToString(),
+                    Vigencia = Convert.ToBoolean(Lista[5])
+            });
+            }
+            ///Mostrar datos en el reporte
+            this.reportViewer1.LocalReport.ReportEmbeddedResource = "PoryectoReporte.Reporte.rdlc";
+            ReportDataSource rds1 = new ReportDataSource("Personas", Agregar);
+            this.reportViewer1.LocalReport.DataSources.Clear();
+            this.reportViewer1.LocalReport.DataSources.Add(rds1);
+            this.reportViewer1.RefreshReport();
+        }
+
+      
+    }
+    /// <summary>
+    /// Clase para conectarse
+    /// al servidor de base de datos
+    /// </summary>
+    public class Conexionsql {
+       /// <summary>
+       /// Retorna Tabla con datos
+       /// </summary>
+       /// <returns></returns>
+        public DataTable Datos() {
+            // Fragmento de código para
+            //Para conexión al SQLSERVER
+            DataTable Retornar=new DataTable();
+            SqlConnection Conectar = new SqlConnection(@"Data Source={Nombreservidor};Initial Catalog=Reporte;Integrated Security=True");
+            Conectar.Open();
+            //Se ejecuta el procedimiento almacenado
+            SqlDataAdapter Comandosql = new SqlDataAdapter("exec DatosPersona", Conectar);
+            Comandosql.Fill(Retornar);
+            Conectar.Close();
+            return Retornar;
+        }
+    }
+}
